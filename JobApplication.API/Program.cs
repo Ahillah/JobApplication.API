@@ -1,16 +1,18 @@
 using JobApplication.API.Middleware;
+using JobApplication.API.Services;
+using JobApplication.Application.Interfaces.IRepositories;
 using JobApplication.Application.Interfaces.IServices;
 using JobApplication.Application.Services;
 using JobApplication.Domain.Entities;
 using JobApplication.Infrastructure;
+using JobApplication.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Text;
 using System.Threading.RateLimiting;
-
-using Scalar.AspNetCore;
 
 namespace JobApplication.API
 {
@@ -99,7 +101,21 @@ namespace JobApplication.API
             // Application Services
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
-
+            builder.Services.AddScoped(
+    typeof(IGenericRepository<,>),
+    typeof(GenericRepository<,>));
+            builder.Services.AddScoped<
+    IJobCandidateApplicationRepository,
+    JobCandidateApplicationRepository>();
+            builder.Services.AddScoped<
+    IJobRepository,
+    JobRepository>();
+            builder.Services.AddScoped<
+    IJobApplicationService,
+    JobApplicationService>();
+            builder.Services.AddScoped<
+    IStorageService,
+    StorageService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

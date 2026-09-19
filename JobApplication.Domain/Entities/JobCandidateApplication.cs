@@ -17,6 +17,8 @@ namespace JobApplication.Domain.Entities
        
         public Job Job { get; set; }
         public JobApplicationStatus JobApplicationStatus { get; set; }
-      
+
+        public string CvUrl { get; set; } = default!;
+
     }
 }

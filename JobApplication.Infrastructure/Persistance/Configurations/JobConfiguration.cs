@@ -36,6 +36,10 @@ namespace JobApplication.Infrastructure.Persistance.Configurations
     .WithOne(a => a.Job)
     .HasForeignKey(a => a.JobId)
     .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(x => x.Recruiter)
+    .WithMany()
+    .HasForeignKey(x => x.RecruiterId)
+    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

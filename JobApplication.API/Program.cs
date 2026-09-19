@@ -116,6 +116,7 @@ namespace JobApplication.API
             builder.Services.AddScoped<
     IStorageService,
     StorageService>();
+            builder.Services.AddScoped<IJobService, JobService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

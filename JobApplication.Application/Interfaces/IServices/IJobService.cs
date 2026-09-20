@@ -25,5 +25,9 @@ namespace JobApplication.Application.Interfaces.IServices
 
         Task<JobDetailsDto> GetJobDetailsAsync(
             int jobId);
+
+        Task CloseJobAsync(
+    int recruiterId,
+    int jobId);
     }
 }

@@ -44,8 +44,12 @@ namespace JobApplication.Application.Services
                 throw new InvalidOperationException(
                     "You can only apply for active jobs.");
             }
+            if (job.IsClosed)
+            {
+                throw new InvalidOperationException(
+                    "This job is closed and no longer accepts applications.");
+            }
 
-           
             var alreadyApplied =
                 await _applicationRepository
                     .ExistsForCandidateAsync(

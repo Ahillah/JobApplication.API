@@ -104,8 +104,29 @@ namespace JobApplication.API.Controllers
                         job,
                         "Job details retrieved successfully."));
             }
+        [Authorize(Roles = Roles.Recruiter)]
+        [HttpPost("{jobId}/close")]
+        public async Task<IActionResult> CloseJob(
+    int jobId)
+        {
+            if (!TryGetUserId(out var recruiterId))
+            {
+                return Unauthorized(
+                    ApiResponse<object>.Failure(
+                        "Invalid user identity."));
+            }
 
-            private bool TryGetUserId(out int userId)
+            await _jobService.CloseJobAsync(
+                recruiterId,
+                jobId);
+
+            return Ok(
+                ApiResponse<object>.Success(
+                    null!,
+                    "Job closed successfully."));
+        }
+
+        private bool TryGetUserId(out int userId)
             {
                 var userIdClaim =
                     User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

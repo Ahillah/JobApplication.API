@@ -12,6 +12,7 @@ namespace JobApplication.Application.DTO_s.JobDto
         public string Title { get; set; } = default!;
         public string Description { get; set; } = default!;
         public bool IsActive { get; set; }
+        public bool IsClosed { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

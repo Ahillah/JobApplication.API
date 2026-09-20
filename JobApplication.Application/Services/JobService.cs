@@ -26,6 +26,7 @@ namespace JobApplication.Application.Services
                 Description = dto.Description,
                 RecruiterId = recruiterId,
                 IsActive = true,
+                IsClosed = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -103,8 +104,40 @@ namespace JobApplication.Application.Services
                 Title = job.Title,
                 Description = job.Description,
                 IsActive = job.IsActive,
+                IsClosed = job.IsClosed,
                 CreatedAt = job.CreatedAt
             };
+        }
+        public async Task CloseJobAsync(
+    int recruiterId,
+    int jobId)
+        {
+            var job = await _jobRepository.GetByIdAsync(
+                jobId,
+                trackChanges: true);
+
+            if (job is null)
+            {
+                throw new KeyNotFoundException(
+                    "Job was not found.");
+            }
+
+            if (job.RecruiterId != recruiterId)
+            {
+                throw new UnauthorizedAccessException(
+                    "You are not allowed to close this job.");
+            }
+
+            if (job.IsClosed)
+            {
+                throw new InvalidOperationException(
+                    "This job is already closed.");
+            }
+
+            job.IsClosed = true;
+            job.UpdatedAt = DateTime.UtcNow;
+
+            await _jobRepository.SaveChangesAsync();
         }
     }
 }

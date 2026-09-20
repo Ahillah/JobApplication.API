@@ -18,5 +18,16 @@ namespace JobApplication.Application.Interfaces.IServices
         Task CancelApplicationAsync(
     int candidateId,
     int applicationId);
+
+
+        Task<IReadOnlyList<JobApplicationDetailsDto>>
+        GetJobApplicationsAsync(
+            int recruiterId,
+            int jobId);
+        Task UpdateApplicationStatusAsync(
+    int recruiterId,
+    int applicationId,
+    UpdateApplicationStatusDto dto);
+
     }
 }

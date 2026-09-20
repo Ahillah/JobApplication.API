@@ -10,7 +10,7 @@ namespace JobApplication.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = Roles.Candidate)]
+    [Authorize]
     public class ApplicationController : ControllerBase
     {
         private readonly IJobApplicationService _applicationService;
@@ -21,17 +21,18 @@ namespace JobApplication.API.Controllers
             _applicationService = applicationService;
         }
         [HttpPost]
+        [Authorize(Roles = Roles.Candidate)]
         public async Task<IActionResult> Apply(
           [FromForm] ApplyForJobDto dto)
         {
-            if (!TryGetCandidateId(out var candidateId))
+            if (!TryGetUserId(out var userId))
             {
                 return Unauthorized(
                     ApiResponse<object>.Failure(
                         "Invalid user identity."));
             }
             await _applicationService.ApplyForJobAsync(
-                candidateId,
+                userId,
                 dto);
             return StatusCode(
              StatusCodes.Status201Created,
@@ -41,9 +42,10 @@ namespace JobApplication.API.Controllers
         }
 
         [HttpGet("my-applications")]
+        [Authorize(Roles = Roles.Candidate)]
         public async Task<IActionResult> GetMyApplications()
         {
-            if (!TryGetCandidateId(out var candidateId))
+            if (!TryGetUserId(out var userId))
             {
                 return Unauthorized(
                     ApiResponse<object>.Failure(
@@ -52,7 +54,7 @@ namespace JobApplication.API.Controllers
 
             var applications =
                 await _applicationService
-                    .GetMyApplicationsAsync(candidateId);
+                    .GetMyApplicationsAsync(userId);
 
             return Ok(
                 ApiResponse<IReadOnlyList<CandidateApplicationDto>>.Success(
@@ -61,10 +63,11 @@ namespace JobApplication.API.Controllers
         }
 
         [HttpDelete("{applicationId}")]
+        [Authorize(Roles = Roles.Candidate)]
         public async Task<IActionResult> CancelApplication(
     int applicationId)
         {
-            if (!TryGetCandidateId(out var candidateId))
+            if (!TryGetUserId(out var userId))
             {
                 return Unauthorized(
                     ApiResponse<object>.Failure(
@@ -72,7 +75,7 @@ namespace JobApplication.API.Controllers
             }
 
             await _applicationService.CancelApplicationAsync(
-                candidateId,
+                userId,
                 applicationId);
 
             return Ok(
@@ -80,12 +83,58 @@ namespace JobApplication.API.Controllers
                     null!,
                     "Application cancelled successfully."));
         }
-        private bool TryGetCandidateId(out int candidateId)
+        [Authorize(Roles = Roles.Recruiter)]
+        [HttpGet("job/{jobId}")]
+        public async Task<IActionResult> GetJobApplications(
+    int jobId)
         {
-            var candidateIdClaim =
+            if (!TryGetUserId(out var recruiterId))
+            {
+                return Unauthorized(
+                    ApiResponse<object>.Failure(
+                        "Invalid user identity."));
+            }
+
+            var applications =
+                await _applicationService
+                    .GetJobApplicationsAsync(
+                        recruiterId,
+                        jobId);
+
+            return Ok(
+                ApiResponse<IReadOnlyList<JobApplicationDetailsDto>>.Success(
+                    applications,
+                    "Job applications retrieved successfully."));
+        }
+        [Authorize(Roles = Roles.Recruiter)]
+        [HttpPatch("{applicationId}/status")]
+        public async Task<IActionResult> UpdateApplicationStatus(
+    int applicationId,
+    [FromBody] UpdateApplicationStatusDto dto)
+        {
+            if (!TryGetUserId(out var recruiterId))
+            {
+                return Unauthorized(
+                    ApiResponse<object>.Failure(
+                        "Invalid user identity."));
+            }
+
+            await _applicationService.UpdateApplicationStatusAsync(
+                recruiterId,
+                applicationId,
+                dto);
+
+            return Ok(
+                ApiResponse<object>.Success(
+                    null!,
+                    "Application status updated successfully."));
+        }
+        private bool TryGetUserId(out int userId)
+        {
+            var userIdClaim =
                 User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            return int.TryParse(candidateIdClaim, out candidateId);
+            return int.TryParse(userIdClaim, out userId);
         }
     }
 }

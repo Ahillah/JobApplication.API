@@ -38,6 +38,15 @@ namespace JobApplication.Infrastructure.Repositories
                 .Where(x => x.ApplicationUserId == candidateId)
                 .ToListAsync();
         }
+        public async Task<IReadOnlyList<JobCandidateApplication>>
+    GetByJobIdAsync(int jobId)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Include(x => x.ApplicationUser)
+                .Where(x => x.JobId == jobId)
+                .ToListAsync();
+        }
 
     }
 }

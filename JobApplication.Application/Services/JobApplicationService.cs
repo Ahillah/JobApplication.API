@@ -150,5 +150,125 @@ namespace JobApplication.Application.Services
 
             await _applicationRepository.SaveChangesAsync();
         }
+
+        public async Task<IReadOnlyList<JobApplicationDetailsDto>>
+    GetJobApplicationsAsync(
+        int recruiterId,
+        int jobId)
+        {
+            var job = await _jobRepository.GetByIdAsync(jobId);
+
+            if (job is null)
+            {
+                throw new KeyNotFoundException(
+                    "Job was not found.");
+            }
+
+            if (job.RecruiterId != recruiterId)
+            {
+                throw new UnauthorizedAccessException(
+                    "You are not allowed to view applications for this job.");
+            }
+
+            var applications =
+                await _applicationRepository.GetByJobIdAsync(jobId);
+
+            return applications
+                .Select(application => new JobApplicationDetailsDto
+                {
+                    Id = application.Id,
+                    CandidateId = application.ApplicationUserId,
+                    CandidateName =
+                        $"{application.ApplicationUser.FirstName} {application.ApplicationUser.LastName}",
+                    CandidateEmail =
+                        application.ApplicationUser.Email ?? string.Empty,
+                    CvUrl = application.CvUrl,
+                    JobApplicationStatus =
+                        application.JobApplicationStatus.ToString(),
+                    AppliedAt = application.CreatedAt
+                })
+                .ToList();
+        }
+        public async Task UpdateApplicationStatusAsync(
+    int recruiterId,
+    int applicationId,
+    UpdateApplicationStatusDto dto)
+        {
+            var application =
+                await _applicationRepository.GetByIdAsync(
+                    applicationId,
+                    trackChanges: true);
+
+            if (application is null)
+            {
+                throw new KeyNotFoundException(
+                    "Application was not found.");
+            }
+
+            var job =
+                await _jobRepository.GetByIdAsync(
+                    application.JobId);
+
+            if (job is null)
+            {
+                throw new KeyNotFoundException(
+                    "Job was not found.");
+            }
+
+            if (job.RecruiterId != recruiterId)
+            {
+                throw new UnauthorizedAccessException(
+                    "You are not allowed to update this application.");
+            }
+
+            if (application.JobApplicationStatus
+                == JobApplicationStatus.Cancelled)
+            {
+                throw new InvalidOperationException(
+                    "A cancelled application cannot be updated.");
+            }
+
+            if (application.JobApplicationStatus
+                == JobApplicationStatus.Accepted ||
+                application.JobApplicationStatus
+                == JobApplicationStatus.Rejected)
+            {
+                throw new InvalidOperationException(
+                    "This application is already in a final status.");
+            }
+
+            var currentStatus =
+                application.JobApplicationStatus;
+
+            var newStatus =
+                dto.Status;
+
+            var isValidTransition =
+                currentStatus switch
+                {
+                    JobApplicationStatus.Applied =>
+                        newStatus == JobApplicationStatus.UnderReview,
+
+                    JobApplicationStatus.UnderReview =>
+                        newStatus == JobApplicationStatus.InterView,
+
+                    JobApplicationStatus.InterView =>
+                        newStatus == JobApplicationStatus.Accepted ||
+                        newStatus == JobApplicationStatus.Rejected,
+
+                    _ => false
+                };
+
+            if (!isValidTransition)
+            {
+                throw new InvalidOperationException(
+                    "Invalid application status transition.");
+            }
+
+            application.JobApplicationStatus = newStatus;
+            application.UpdatedAt = DateTime.UtcNow;
+
+            await _applicationRepository.SaveChangesAsync();
+        }
     }
 }

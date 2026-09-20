@@ -17,6 +17,9 @@ namespace JobApplication.Application.Interfaces.IRepositories
 
         Task<IReadOnlyList<JobCandidateApplication>>
          GetByCandidateIdAsync(int candidateId);
+
+        Task<IReadOnlyList<JobCandidateApplication>>
+    GetByJobIdAsync(int jobId);
     }
 }
 

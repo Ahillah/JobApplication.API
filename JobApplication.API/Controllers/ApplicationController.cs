@@ -59,6 +59,27 @@ namespace JobApplication.API.Controllers
                     applications,
                     "Applications retrieved successfully."));
         }
+
+        [HttpDelete("{applicationId}")]
+        public async Task<IActionResult> CancelApplication(
+    int applicationId)
+        {
+            if (!TryGetCandidateId(out var candidateId))
+            {
+                return Unauthorized(
+                    ApiResponse<object>.Failure(
+                        "Invalid user identity."));
+            }
+
+            await _applicationService.CancelApplicationAsync(
+                candidateId,
+                applicationId);
+
+            return Ok(
+                ApiResponse<object>.Success(
+                    null!,
+                    "Application cancelled successfully."));
+        }
         private bool TryGetCandidateId(out int candidateId)
         {
             var candidateIdClaim =

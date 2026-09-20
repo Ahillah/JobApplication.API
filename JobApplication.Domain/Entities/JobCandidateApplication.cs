@@ -19,6 +19,7 @@ namespace JobApplication.Domain.Entities
         public JobApplicationStatus JobApplicationStatus { get; set; }
 
         public string CvUrl { get; set; } = default!;
+        public DateTime? CancelledAt { get; set; }
 
     }
 }

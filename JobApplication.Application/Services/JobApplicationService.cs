@@ -101,5 +101,50 @@ namespace JobApplication.Application.Services
                 })
                 .ToList();
         }
+
+        public async Task CancelApplicationAsync(
+    int candidateId,
+    int applicationId)
+        {
+            var application =
+                await _applicationRepository.GetByIdAsync(
+                    applicationId,
+                    trackChanges: true);
+
+            if (application is null)
+            {
+                throw new KeyNotFoundException(
+                    "Application was not found.");
+            }
+
+            if (application.ApplicationUserId != candidateId)
+            {
+                throw new UnauthorizedAccessException(
+                    "You are not allowed to cancel this application.");
+            }
+
+            if (application.JobApplicationStatus
+                == JobApplicationStatus.Cancelled)
+            {
+                throw new InvalidOperationException(
+                    "This application has already been cancelled.");
+            }
+
+            if (application.JobApplicationStatus != JobApplicationStatus.Applied &&
+                application.JobApplicationStatus != JobApplicationStatus.UnderReview)
+            {
+                throw new InvalidOperationException(
+                    "This application cannot be cancelled at its current status.");
+            }
+
+            application.JobApplicationStatus =
+                JobApplicationStatus.Cancelled;
+
+            application.CancelledAt = DateTime.UtcNow;
+
+            application.UpdatedAt = DateTime.UtcNow;
+
+            await _applicationRepository.SaveChangesAsync();
+        }
     }
 }

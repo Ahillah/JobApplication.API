@@ -14,5 +14,9 @@ namespace JobApplication.Application.Interfaces.IServices
             ApplyForJobDto dto);
         Task<IReadOnlyList<CandidateApplicationDto>>
         GetMyApplicationsAsync(int candidateId);
+
+        Task CancelApplicationAsync(
+    int candidateId,
+    int applicationId);
     }
 }

@@ -117,6 +117,8 @@ namespace JobApplication.API
     IStorageService,
     StorageService>();
             builder.Services.AddScoped<IJobService, JobService>();
+            builder.Services.AddMediatR(cfg =>
+           cfg.RegisterServicesFromAssembly(typeof(JobApplication.Application.AssemblyReference).Assembly));
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

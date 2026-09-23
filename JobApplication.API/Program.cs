@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
+using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -117,14 +119,35 @@ namespace JobApplication.API
     IStorageService,
     StorageService>();
             builder.Services.AddScoped<IJobService, JobService>();
+            builder.Services.AddMediatR(cfg =>
+           cfg.RegisterServicesFromAssembly(typeof(JobApplication.Application.AssemblyReference).Assembly));
+
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Job Application API",
+                    Version = "v1",
+                    Description = "API for managing job postings and candidate applications."
+                });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    options.IncludeXmlComments(xmlPath);
+                }
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
 
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
-                app.MapScalarApiReference();
+                app.UseSwagger();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Job Application API v1");
+                });
             }
 
             app.UseMiddleware<ExceptionHandlingMiddleware>();

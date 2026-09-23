@@ -1,11 +1,13 @@
-﻿
-using JobApplication.Application.DTO_s.Identity;
+﻿using JobApplication.Application.DTO_s.Identity;
 using JobApplication.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace JobApplication.API.Controllers
 {
+    /// <summary>
+    /// Handles user authentication operations, including registration and login.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [EnableRateLimiting("auth")]
@@ -18,7 +20,19 @@ namespace JobApplication.API.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Registers a new user account.
+        /// </summary>
+        /// <param name="dto">
+        /// The registration data including the user's personal information,
+        /// email, and password.
+        /// </param>
+        /// <returns>
+        /// The created user's authentication information and JWT token.
+        /// </returns>
         [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
             if (!ModelState.IsValid)
@@ -50,7 +64,18 @@ namespace JobApplication.API.Controllers
                     "تم إنشاء الحساب بنجاح."));
         }
 
+        /// <summary>
+        /// Authenticates a user and generates a JWT token.
+        /// </summary>
+        /// <param name="dto">
+        /// The login credentials including email and password.
+        /// </param>
+        /// <returns>
+        /// The authenticated user's information and JWT token.
+        /// </returns>
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             if (!ModelState.IsValid)

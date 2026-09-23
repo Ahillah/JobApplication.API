@@ -137,6 +137,8 @@ namespace JobApplication.API
                     options.IncludeXmlComments(xmlPath);
                 }
             });
+            builder.Services.AddMediatR(cfg =>
+           cfg.RegisterServicesFromAssembly(typeof(JobApplication.Application.AssemblyReference).Assembly));
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

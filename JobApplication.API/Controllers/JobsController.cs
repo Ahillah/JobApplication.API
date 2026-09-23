@@ -1,6 +1,8 @@
 ﻿using JobApplication.Application.DTO_s.JobDto;
+using JobApplication.Application.Features.CloseJob.Commands.UpdateJobToBeClosed;
 using JobApplication.Application.Interfaces.IServices;
 using JobApplication.Domain.Constants;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,14 +20,13 @@ namespace JobApplication.API.Controllers
     {
         private readonly IJobService _jobService;
         private readonly IMediator _mediator;
-
-        public JobsController(
-            IJobService jobService,
-            IMediator mediator)
-        {
-            _jobService = jobService;
-            _mediator = mediator;
-        }
+  
+     
+        public JobsController(IJobService jobService , IMediator mediator)
+            {
+                _jobService = jobService;
+              _mediator = mediator;
+            }
 
         /// <summary>
         /// Creates a new job posting.
@@ -189,6 +190,12 @@ namespace JobApplication.API.Controllers
             }
 
             await _mediator.Send(new CloseJobCommand
+            {
+                JobId = jobId,
+                RecruiterId = recruiterId
+            });
+         
+            await _mediator.Send(new CloseJobCommand()
             {
                 JobId = jobId,
                 RecruiterId = recruiterId

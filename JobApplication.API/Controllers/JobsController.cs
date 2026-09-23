@@ -1,6 +1,8 @@
 ﻿using JobApplication.Application.DTO_s.JobDto;
+using JobApplication.Application.Features.CloseJob.Commands.UpdateJobToBeClosed;
 using JobApplication.Application.Interfaces.IServices;
 using JobApplication.Domain.Constants;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +16,12 @@ namespace JobApplication.API.Controllers
         public class JobsController : ControllerBase
         {
             private readonly IJobService _jobService;
+            private readonly IMediator _mediator;
 
-            public JobsController(IJobService jobService)
+        public JobsController(IJobService jobService , IMediator mediator)
             {
                 _jobService = jobService;
+              _mediator = mediator;
             }
 
             [Authorize(Roles = Roles.Recruiter)]
@@ -116,9 +120,12 @@ namespace JobApplication.API.Controllers
                         "Invalid user identity."));
             }
 
-            await _jobService.CloseJobAsync(
-                recruiterId,
-                jobId);
+         
+            await _mediator.Send(new CloseJobCommand()
+            {
+                JobId = jobId,
+                RecruiterId = recruiterId
+            });
 
             return Ok(
                 ApiResponse<object>.Success(
